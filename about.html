@@ -285,10 +285,40 @@ body {
 
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
-  .section-grid { grid-template-columns: 1fr; }
-  .image-row { grid-template-columns: 1fr; }
-  .image-row img { height: 250px; }
-  .highlights { grid-template-columns: 1fr; }
+  .section-grid { grid-template-columns: 1fr; gap: 40px; }
+  .image-row { grid-template-columns: 1fr; gap: 4px; padding: 0 20px; }
+  .image-row img { height: 220px; }
+  .highlights { grid-template-columns: 1fr; gap: 2px; }
+
+  .top-nav {
+    padding: 16px 20px;
+  }
+
+  .back-link { font-size: 18px; }
+  .nav-right a { font-size: 13px; padding: 8px 0; min-height: 44px; display: flex; align-items: center; }
+
+  .about-hero { height: 70vh; min-height: 400px; }
+  .about-hero-img img { object-position: center 35%; }
+
+  .about-hero-content {
+    padding: 28px 20px;
+  }
+
+  .about-hero-content h1 { font-size: 36px; }
+  .about-hero-content .subtitle { font-size: 12px; letter-spacing: 0.1em; }
+
+  .content-section {
+    padding: 48px 20px;
+  }
+
+  .section-text { font-size: 15px; line-height: 1.7; }
+
+  .highlight-card { padding: 24px 20px; }
+  .highlight-num { font-size: 32px; }
+  .highlight-label { font-size: 11px; }
+
+  .about-footer { padding: 40px 20px 32px; }
+  .about-footer .socials a { width: 44px; height: 44px; }
 }
 </style>
 </head>

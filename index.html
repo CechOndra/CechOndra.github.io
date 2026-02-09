@@ -423,19 +423,138 @@ html, body {
 /* ═══════════════════════════════════════
    MOBILE
    ═══════════════════════════════════════ */
+/* ═══ Tablet ═══ */
+@media (max-width: 1024px) {
+  .name .first, .name .last { font-size: clamp(36px, 6vw, 60px); }
+}
+
+/* ═══ Mobile ═══ */
 @media (max-width: 768px) {
+  html, body { cursor: auto; overflow-x: hidden; }
   .cur-ring, .cur-dot { display: none; }
-  html, body { cursor: auto; }
   .echo-wrap, .spot-ring { display: none; }
-  .layer-hockey { display: none; }
-  .ui-spot { display: none; }
+  .grid-bg { opacity: 0.015; }
+
+  /* Show hockey layer with tap interaction */
+  .layer-hockey {
+    clip-path: circle(0px at 50% 50%);
+    transition: clip-path 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .layer-hockey.mobile-reveal {
+    clip-path: circle(120px at var(--touch-x, 50%) var(--touch-y, 50%));
+  }
+
+  .ui-spot {
+    clip-path: circle(0px at 50% 50%);
+    transition: clip-path 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .ui-spot.mobile-reveal {
+    clip-path: circle(120px at var(--touch-x, 50%) var(--touch-y, 50%));
+  }
+
+  .img-layer img { object-position: 40% center; }
+
   .ui-base .name { color: rgba(255,255,255,0.9); }
   .ui-base .nav-link { color: rgba(255,255,255,0.7); cursor: pointer; }
   .ui-base .tagline { color: rgba(255,255,255,0.5); }
   .ui-base .socials svg { fill: rgba(255,255,255,0.7); }
   .socials a { cursor: pointer; }
-  .projects-panel { width: 100vw; }
   .nav-link { cursor: pointer; }
+
+  /* Stack name and nav vertically */
+  .name {
+    top: clamp(24px, 4vh, 40px);
+    left: clamp(20px, 5vw, 32px);
+  }
+
+  .name .first, .name .last {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .nav {
+    top: auto;
+    bottom: auto;
+    top: clamp(24px, 4vh, 40px);
+    right: clamp(20px, 5vw, 32px);
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 8px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .tagline {
+    bottom: clamp(24px, 4vh, 40px);
+    left: clamp(20px, 5vw, 32px);
+    right: 80px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    line-height: 1.5;
+  }
+
+  .socials {
+    bottom: clamp(24px, 4vh, 40px);
+    right: clamp(20px, 5vw, 32px);
+    gap: 14px;
+  }
+
+  .socials a {
+    width: 44px; height: 44px;
+  }
+
+  /* Projects panel full width */
+  .projects-panel { width: 100vw; }
+
+  .projects-panel-inner {
+    padding: 28px 20px;
+  }
+
+  .projects-header { margin-bottom: 32px; }
+
+  .projects-title { font-size: 28px; }
+
+  .project-card { padding: 22px 0; }
+
+  .project-name { font-size: 19px; flex-wrap: wrap; gap: 8px; }
+
+  .project-desc { font-size: 12px; }
+
+  /* Tap hint */
+  .mobile-hint {
+    display: block;
+    position: absolute;
+    bottom: calc(clamp(24px, 4vh, 40px) + 36px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.15);
+    animation: hintPulse 2.5s ease-in-out infinite;
+    white-space: nowrap;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  @keyframes hintPulse {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.35; }
+  }
+}
+
+/* ═══ Small phones ═══ */
+@media (max-width: 380px) {
+  .name .first, .name .last { font-size: 32px; }
+  .nav-link { font-size: 11px; }
+  .tagline { font-size: 9px; }
 }
 </style>
 </head>
@@ -506,6 +625,7 @@ html, body {
 
   <div class="cur-ring" id="curRing"></div>
   <div class="cur-dot" id="curDot"></div>
+  <div class="mobile-hint" style="display:none;" id="mobileHint">Tap & hold to reveal</div>
 </div>
 
 <!-- Projects overlay -->
@@ -608,6 +728,35 @@ document.addEventListener('touchmove', e => {
   const t=e.touches[0]; mx=t.clientX; my=t.clientY; entered=true;
 }, {passive:true});
 document.addEventListener('touchend', () => { entered=false; });
+
+// ─── Mobile touch reveal ───
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+if (isMobile) {
+  const hint = document.getElementById('mobileHint');
+  hint.style.display = 'block';
+
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('.projects-panel') || e.target.closest('.projects-overlay') || e.target.closest('.nav-link') || e.target.closest('.socials')) return;
+    const t = e.touches[0];
+    document.documentElement.style.setProperty('--touch-x', t.clientX + 'px');
+    document.documentElement.style.setProperty('--touch-y', t.clientY + 'px');
+    layerHockey.classList.add('mobile-reveal');
+    uiSpot.classList.add('mobile-reveal');
+    hint.style.display = 'none';
+  }, {passive: true});
+
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    document.documentElement.style.setProperty('--touch-x', t.clientX + 'px');
+    document.documentElement.style.setProperty('--touch-y', t.clientY + 'px');
+  }, {passive: true});
+
+  document.addEventListener('touchend', () => {
+    layerHockey.classList.remove('mobile-reveal');
+    uiSpot.classList.remove('mobile-reveal');
+  });
+}
 
 // ─── Projects panel ───
 const projOverlay = document.getElementById('projOverlay');
