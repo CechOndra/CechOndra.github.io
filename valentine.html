@@ -137,6 +137,16 @@ h1 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.success-photo {
+  display: block;
+  margin: 1.5rem auto 0;
+  max-width: min(80vw, 350px);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(194, 24, 91, 0.3);
+  border: 4px solid #f48fb1;
+  animation: fadeInUp 1s ease 0.5s both;
+}
+
 /* Vine / corner decorations */
 .corner-deco {
   position: fixed;
@@ -168,7 +178,8 @@ h1 {
   </div>
 
   <div class="success-msg" id="successMsg">
-    Věděl/a jsem to! 🥰💕
+    Jupiiiii, věděl jsem to! 🥰💕
+    <img src="img/valentine.png" alt="" class="success-photo" />
   </div>
 </div>
 
@@ -192,28 +203,17 @@ const btnYes = document.getElementById('btnYes');
 const btnNo = document.getElementById('btnNo');
 const successMsg = document.getElementById('successMsg');
 
-const phrases = [
-  'NE', 'Fakt ne?', 'Jsi si jistá?', 'Rozmysli si to!',
-  'Prosííím 🥺', 'No tak!', 'Zkus znovu...', 'Špatná volba!',
-  'Ale no tak 😢', '...'
-];
-
 function sayNo() {
   noCount++;
 
   // Grow the YES button
-  const yesScale = 1 + noCount * 0.25;
   btnYes.style.fontSize = (1.5 + noCount * 0.3) + 'rem';
   btnYes.style.padding = (1 + noCount * 0.3) + 'rem ' + (3 + noCount * 0.6) + 'rem';
 
   // Shrink the NO button
-  const noScale = Math.max(0.2, 1 - noCount * 0.12);
   btnNo.style.fontSize = Math.max(0.4, 1.5 - noCount * 0.15) + 'rem';
   btnNo.style.padding = Math.max(0.2, 1 - noCount * 0.1) + 'rem ' + Math.max(0.5, 3 - noCount * 0.35) + 'rem';
   btnNo.style.opacity = Math.max(0.3, 1 - noCount * 0.08);
-
-  // Change NO button text
-  btnNo.textContent = phrases[Math.min(noCount, phrases.length - 1)];
 }
 
 function sayYes() {
