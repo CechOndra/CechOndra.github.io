@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulačka bodů PFUK — Ondřej Čech</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  background: #050505;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* Grid bg */
+.grid-fixed {
+  position: fixed; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.02;
+}
+
+/* Nav */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(20px,3vh,36px) clamp(28px,4vw,60px);
+  background: linear-gradient(to bottom, rgba(5,5,5,0.95) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.top-nav > * { pointer-events: auto; }
+
+.back-link {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: clamp(18px, 2vw, 26px);
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.3s;
+  letter-spacing: -0.02em;
+}
+
+.back-link:hover { color: #fff; }
+
+.nav-right a {
+  font-size: clamp(12px, 1vw, 15px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav-right a:hover { color: #fff; }
+
+/* Main card */
+.calc-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  margin: clamp(100px,14vh,160px) auto clamp(40px,6vh,80px);
+  padding: 0 clamp(20px,3vw,40px);
+}
+
+.calc-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.calc-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: clamp(28px, 3.5vw, 40px);
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  color: rgba(255,255,255,0.9);
+}
+
+.calc-header p {
+  font-weight: 300;
+  font-size: clamp(13px, 1vw, 15px);
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.05em;
+}
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 40px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  padding: 3px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mode-btn.active {
+  background: rgba(56,166,217,0.12);
+  color: rgba(56,166,217,0.9);
+}
+
+.mode-btn:hover:not(.active) {
+  color: rgba(255,255,255,0.6);
+}
+
+/* Input sections */
+.input-section {
+  display: none;
+}
+
+.input-section.active {
+  display: block;
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  outline: none;
+  transition: all 0.3s;
+  -moz-appearance: textfield;
+}
+
+.form-input::-webkit-inner-spin-button,
+.form-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-input::placeholder {
+  color: rgba(255,255,255,0.15);
+}
+
+.form-input:focus {
+  border-color: rgba(56,166,217,0.4);
+  background: rgba(56,166,217,0.04);
+  box-shadow: 0 0 0 3px rgba(56,166,217,0.08);
+}
+
+/* Two-column inputs */
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Section divider */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+
+.section-divider span {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Calculate button */
+.calc-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 36px;
+  background: rgba(56,166,217,0.15);
+  border: 1px solid rgba(56,166,217,0.25);
+  border-radius: 10px;
+  color: rgba(56,166,217,0.95);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.calc-btn:hover {
+  background: rgba(56,166,217,0.22);
+  border-color: rgba(56,166,217,0.4);
+  box-shadow: 0 4px 24px rgba(56,166,217,0.12);
+}
+
+/* Results */
+.results {
+  margin-top: 40px;
+  display: none;
+}
+
+.results.show { display: block; }
+
+.results-header {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(56,166,217,0.5);
+  margin-bottom: 20px;
+}
+
+.result-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.result-card:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.result-label {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.03em;
+}
+
+.result-value {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 24px;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: -0.02em;
+}
+
+.result-card.primary {
+  background: rgba(56,166,217,0.06);
+  border-color: rgba(56,166,217,0.15);
+}
+
+.result-card.primary .result-value {
+  color: rgba(56,166,217,0.95);
+}
+
+/* Error */
+.error-msg {
+  background: rgba(220,50,50,0.08);
+  border: 1px solid rgba(220,50,50,0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(220,50,50,0.85);
+  display: none;
+}
+
+.error-msg.show { display: block; }
+
+/* Entrance */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+
+.fd1 { animation-delay: 0.1s; }
+.fd2 { animation-delay: 0.2s; }
+.fd3 { animation-delay: 0.3s; }
+
+@media (max-width: 480px) {
+  .input-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="grid-fixed">
+  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="g" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#fff" stroke-width="0.35"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+  </svg>
+</div>
+
+<nav class="top-nav">
+  <a href="index.html" class="back-link">Ondřej Čech</a>
+  <div class="nav-right">
+    <a href="index.html">Home</a>
+  </div>
+</nav>
+
+<div class="calc-wrapper">
+  <div class="calc-header fade-in fd1">
+    <h1>Kalkulačka bodů PFUK</h1>
+    <p>Výpočet bodů pro přijímací řízení na Právnickou fakultu UK</p>
+  </div>
+
+  <!-- Mode toggle -->
+  <div class="mode-toggle fade-in fd2">
+    <button class="mode-btn active" id="modeIndiv" onclick="setMode('individual')">Oddíly OSP a ZSV</button>
+    <button class="mode-btn" id="modeDirect" onclick="setMode('direct')">Celkové OSP a ZSV</button>
+  </div>
+
+  <!-- Individual inputs -->
+  <div class="input-section active fade-in fd3" id="secIndiv">
+    <div class="section-divider"><span>OSP — Oddíly</span></div>
+    <div class="input-row">
+      <div class="form-group">
+        <label class="form-label" for="analyt">Analytický</label>
+        <input type="number" class="form-input" id="analyt" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="verbal">Verbální</label>
+        <input type="number" class="form-input" id="verbal" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+    </div>
+
+    <div class="section-divider"><span>ZSV — Oddíly</span></div>
+    <div class="form-group">
+      <label class="form-label" for="clovek">Člověk a společnost</label>
+      <input type="number" class="form-input" id="clovek" min="0" max="100" step="0.1" placeholder="0 – 100">
+    </div>
+    <div class="input-row">
+      <div class="form-group">
+        <label class="form-label" for="pravo">Právo</label>
+        <input type="number" class="form-input" id="pravo" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="hospodarstvi">Hospodářství</label>
+        <input type="number" class="form-input" id="hospodarstvi" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+    </div>
+  </div>
+
+  <!-- Direct inputs -->
+  <div class="input-section fade-in fd3" id="secDirect">
+    <div class="input-row">
+      <div class="form-group">
+        <label class="form-label" for="ospDirect">OSP (percentil)</label>
+        <input type="number" class="form-input" id="ospDirect" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="zsvDirect">ZSV (percentil)</label>
+        <input type="number" class="form-input" id="zsvDirect" min="0" max="100" step="0.1" placeholder="0 – 100">
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn fade-in fd3" onclick="calculate()">Vypočítat</button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="results-header">Výsledky</div>
+    <div class="result-card primary">
+      <span class="result-label">Výsledný percentil (SCIO)</span>
+      <span class="result-value" id="resScio">—</span>
+    </div>
+    <div class="result-card">
+      <span class="result-label">Body pouze za C2</span>
+      <span class="result-value" id="resC2">—</span>
+    </div>
+    <div class="result-card">
+      <span class="result-label">Body za C2 + Vysvědčení</span>
+      <span class="result-value" id="resBonif">—</span>
+    </div>
+  </div>
+</div>
+
+<script>
+let mode = 'individual';
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeIndiv').classList.toggle('active', m === 'individual');
+  document.getElementById('modeDirect').classList.toggle('active', m === 'direct');
+  document.getElementById('secIndiv').classList.toggle('active', m === 'individual');
+  document.getElementById('secDirect').classList.toggle('active', m === 'direct');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('errorMsg').classList.remove('show');
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('results').classList.remove('show');
+}
+
+function val(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return { v, ok: !isNaN(v) && v >= 0 && v <= 100 };
+}
+
+function calculate() {
+  document.getElementById('errorMsg').classList.remove('show');
+  let osp, zsv;
+
+  if (mode === 'individual') {
+    const a = val('analyt'), vb = val('verbal');
+    const c = val('clovek'), p = val('pravo'), h = val('hospodarstvi');
+    if (!a.ok || !vb.ok || !c.ok || !p.ok || !h.ok) {
+      return showError('Zadejte prosím korektní hodnoty pro všechny podkategorie (0 až 100).');
+    }
+    osp = (a.v + vb.v) / 2;
+    zsv = (c.v + p.v + h.v) / 3;
+  } else {
+    const o = val('ospDirect'), z = val('zsvDirect');
+    if (!o.ok || !z.ok) {
+      return showError('Zadejte prosím korektní hodnoty pro OSP a ZSV (0 až 100).');
+    }
+    osp = o.v;
+    zsv = z.v;
+  }
+
+  const scio = 1.25 * osp + 0.75 * zsv;
+  const c2 = scio + 5;
+  const bonif = c2 + 5;
+
+  document.getElementById('resScio').textContent = scio.toFixed(2);
+  document.getElementById('resC2').textContent = c2.toFixed(2);
+  document.getElementById('resBonif').textContent = bonif.toFixed(2);
+  document.getElementById('results').classList.add('show');
+}
+
+// Enter key to calculate
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculate();
+});
+</script>
+</body>
+</html>
