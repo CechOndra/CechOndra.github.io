@@ -214,6 +214,12 @@ function sayNo() {
   btnNo.style.fontSize = Math.max(0.4, 1.5 - noCount * 0.15) + 'rem';
   btnNo.style.padding = Math.max(0.2, 1 - noCount * 0.1) + 'rem ' + Math.max(0.5, 3 - noCount * 0.35) + 'rem';
   btnNo.style.opacity = Math.max(0.3, 1 - noCount * 0.08);
+
+  // Move NO button to a random spot on the screen
+  btnNo.style.position = 'fixed';
+  btnNo.style.left = Math.random() * (window.innerWidth - 80) + 'px';
+  btnNo.style.top = Math.random() * (window.innerHeight - 40) + 'px';
+  btnNo.style.zIndex = '50';
 }
 
 function sayYes() {
